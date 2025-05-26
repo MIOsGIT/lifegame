@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Game of Life</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #fff0f5;
+      color: #4a004a;
+      text-align: center;
+      padding: 20px;
+    }
+
+    button {
+      background-color: #f8bbd0;
+      color: #880e4f;
+      border: none;
+      padding: 10px 16px;
+      margin: 5px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    button:hover {
+      background-color: #f48fb1;
+      transform: scale(1.05);
+    }
+
+    .cell {
+      display: inline-block;
+      border: 1px solid #ffc1e3;
+      background-color: #fdeff4;
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      transition: background-color 0.2s;
+    }
+
+    .alive {
+      background-color: #ec407a !important;
+    }
+
+    .dead {
+      background-color: #fdeff4 !important;
+    }
+
+    .grid {
+      display: inline-block;
+      line-height: 0;
+      box-shadow: 0 0 10px rgba(255, 105, 180, 0.4);
+      border: 2px solid #f8bbd0;
+      margin-top: 20px;
+      padding: 6px;
+      background-color: #fff5fa;
+      border-radius: 10px;
+    }
+
+    hr {
+      border: none;
+      height: 1px;
+      background: #f8bbd0;
+      margin: 20px auto;
+      width: 80%;
+    }
+
+    .footer {
+      margin-top: 40px;
+      padding: 10px 0;
+      font-size: 14px;
+      color: #880e4f;
+      background-color: #fff0f5;
+      border-top: 1px solid #f8bbd0;
+    }
+  </style>
+</head>
+<body>
+  <button onclick="clearWorld();">clear</button>
+  <button onclick="clearInterval(myInterval);">stop</button>
+  <button onclick="NextGeneration();">next</button>
+  <button onclick="myInterval = setInterval(NextGeneration, 300);">start</button>
+  <hr/>
+  <div id="grid" class="grid"></div>
+
+  <footer class="footer">
+    <p>💖 Made by <strong>김미주</strong> | 20243100</p>
+  </footer>
+
+  <script>
+    const size = 20;
+    const arraySize = size * size;
+    const neighbor = [
+      [-1, -1], [-1, 0], [-1, 1],
+      [ 0, -1],          [ 0, 1],
+      [ 1, -1], [ 1, 0], [ 1, 1]
+    ];
+    let curr = Array(arraySize).fill(0);
+    let next = Array(arraySize).fill(0);
+    let myInterval;
+    const gridDiv = document.getElementById("grid");
+    let html = "";
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        let id = i * size + j;
+        html += `<div class="cell dead" id="${id}" onclick="Toggle(this, '${id}')"></div>`;
+      }
+      html += "<br/>";
+    }
+    gridDiv.innerHTML = html;
+
+    function Toggle(element, id) {
+      const index = parseInt(id);
+      if (curr[index] === 1) {
+        curr[index] = 0;
+        element.classList.remove("alive");
+        element.classList.add("dead");
+      } else {
+        curr[index] = 1;
+        element.classList.remove("dead");
+        element.classList.add("alive");
+      }
+    }
+
+    function nextState(id) {
+      const i = Math.floor(id / size);
+      const j = id % size;
+      let count = 0;
+      for (let k = 0; k < 8; k++) {
+        const ii = i + neighbor[k][0];
+        const jj = j + neighbor[k][1];
+        if (ii < 0 || ii >= size || jj < 0 || jj >= size) continue;
+        if (curr[ii * size + jj] === 1) count++;
+      }
+      if (curr[i * size + j] === 1 && (count === 2 || count === 3)) return 1;
+      if (curr[i * size + j] === 0 && count === 3) return 1;
+      return 0;
+    }
+
+    function NextGeneration() {
+      for (let id = 0; id < arraySize; id++) {
+        next[id] = nextState(id);
+      }
+      for (let id = 0; id < arraySize; id++) {
+        curr[id] = next[id];
+      }
+      drawWorld();
+    }
+
+    function drawWorld() {
+      for (let id = 0; id < arraySize; id++) {
+        const element = document.getElementById(String(id));
+        if (curr[id] === 1) {
+          element.classList.add("alive");
+          element.classList.remove("dead");
+        } else {
+          element.classList.add("dead");
+          element.classList.remove("alive");
+        }
+      }
+    }
+
+    function clearWorld() {
+      curr.fill(0);
+      drawWorld();
+    }
+  </script>
+</body>
+</html>
